@@ -18,6 +18,7 @@ const deploymentPath = path.join(
   __dirname,
   "..",
   "..",
+  "..",
   "contracts",
   "deployed",
   "usageBilling.arbitrum-sepolia.json",
