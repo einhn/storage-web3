@@ -13,7 +13,6 @@ COPY prisma ./prisma
 
 RUN npm ci
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" npx prisma generate
-COPY contracts ./contracts
 
 # 3) 소스 복사 + 빌드
 COPY src ./src
