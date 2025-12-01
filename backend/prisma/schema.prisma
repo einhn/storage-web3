@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            BigInt          @id @default(autoincrement())
+  externalId    String?         // OAuth user id / email 등 나중에
+  walletAddress String          @unique
+  createdAt     DateTime        @default(now())
+
+  usageSnapshots UsageSnapshot[]
+}
+
+model UsageSnapshot {
+  id            BigInt   @id @default(autoincrement())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        BigInt
+
+  year          Int
+  month         Int
+
+  totalBytes    BigInt
+  billedAmount  Decimal
+
+  snapshotHash  String   // 0x...dead
+
+  commitTxHash  String?
+  commitBlock   BigInt?
+
+  settleTxHash  String?
+  settleBlock   BigInt?
+
+  paid          Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, year, month])
+}
