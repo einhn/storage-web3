@@ -1,4 +1,4 @@
-// frontend/src/pages/app.js
+// frontend/src/pages/_app.js
 import "../styles.css";
 
 export default function MyApp({ Component, pageProps }) {
