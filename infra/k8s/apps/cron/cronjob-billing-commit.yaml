@@ -20,7 +20,7 @@ spec:
                 - name: YEAR
                   value: "2025"
                 - name: MONTH
-                  value: "11"
+                  value: "12"
               command:
                 - /bin/sh
                 - -c
