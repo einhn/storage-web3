@@ -23,14 +23,7 @@ async function main() {
   const network = await ethers.provider.getNetwork();
 
   const artifact = await hre.artifacts.readArtifact("UsageBilling");
-  const outDir = path.join(
-    process.cwd(),
-    "..",
-    "..",
-    "backend",
-    "contracts",
-    "deployed"
-  );
+  const outDir = path.join(process.cwd(), "deployed");
   await fs.mkdir(outDir, { recursive: true });
 
   const data = {

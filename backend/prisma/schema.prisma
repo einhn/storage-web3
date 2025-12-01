@@ -13,10 +13,14 @@ datasource db {
 }
 
 model User {
-  id            BigInt          @id @default(autoincrement())
-  externalId    String?         // OAuth user id / email 등 나중에
-  walletAddress String          @unique
-  createdAt     DateTime        @default(now())
+  id             BigInt          @id @default(autoincrement())
+  oauthProvider  String?         @default("google") // "google" | "github" | "kakao" 같은 값
+  oauthId        String?         // provider 쪽 user id
+  walletAddress  String?         @unique
+  walletJson     String?         // ethers.js encrypted JSON wallet
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now()) @updatedAt
 
   usageSnapshots UsageSnapshot[]
   userFiles      UserFile[]
