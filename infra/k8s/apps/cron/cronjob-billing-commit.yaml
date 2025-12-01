@@ -1,0 +1,34 @@
+# infra/k8s/apps/cron/cronjob-billing-commit.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: usage-billing-commit
+  namespace: storage-web3   # 실제 네임스페이스로 수정
+spec:
+  schedule: "0 12 2 * *"    # 매달 2일 12:00 (노드 타임존 = KST 가정)
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: usage-billing-commit
+              image: curlimages/curl:8.10.1
+              env:
+                - name: YEAR
+                  value: "2025"
+                - name: MONTH
+                  value: "11"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "[cron] Running monthly billing commit at $(date)"
+                  curl -sS -X POST "http://storage-backend:8080/billing/cron-commit" \
+                    -H "Content-Type: application/json" \
+                    -d "{
+                      \"year\": ${YEAR},
+                      \"month\": ${MONTH}
+                    }"
