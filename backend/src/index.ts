@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import billingRouter from "./routes/billing";
+import filesRouter from "./routes/files";
 
 dotenv.config();
 
@@ -17,6 +18,8 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/billing", billingRouter);
+
+app.use("/files", filesRouter);
 
 app.listen(PORT, () => {
   console.log(`[backend] listening on port ${PORT}`);
