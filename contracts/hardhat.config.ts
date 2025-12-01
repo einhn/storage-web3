@@ -1,4 +1,5 @@
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import hardhatVerify from "@nomicfoundation/hardhat-verify";
 import { HardhatUserConfig } from "hardhat/config";
 import * as dotenv from "dotenv";
 
@@ -7,10 +8,14 @@ dotenv.config();
 const {
   ARBITRUM_SEPOLIA_RPC = "",
   DEPLOYER_PRIVATE_KEY,
+  ARBISCAN_API_KEY,
 } = process.env;
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatToolboxMochaEthersPlugin],
+  plugins: [
+    hardhatToolboxMochaEthersPlugin,
+    hardhatVerify,
+  ],
 
   solidity: {
     profiles: {
@@ -26,6 +31,12 @@ const config: HardhatUserConfig = {
           },
         },
       },
+    },
+  },
+
+  verify: {
+    etherscan: {
+      apiKey: ARBISCAN_API_KEY 
     },
   },
 
