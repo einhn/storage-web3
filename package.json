@@ -23,6 +23,6 @@
     "npm": "11.6.4"
   },
   "dependencies": {
-    "next": "16.0.6"
+    "@prisma/client": "^7.0.1"
   }
 }
