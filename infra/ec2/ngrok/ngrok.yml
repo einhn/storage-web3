@@ -1,0 +1,14 @@
+# infra/ec2/ngrok/ngrok.yml
+
+version: "2"
+authtoken: ${NGROK_AUTHTOKEN}
+
+tunnels:
+  api:
+    proto: http
+    addr: 80
+    schemes:
+      - https
+    # region, domain 등은 나중에 필요하면 추가
+    # region: ap
+    # hostname: dori-migratory-damaris.ngrok-free.dev
