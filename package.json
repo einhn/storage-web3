@@ -1,0 +1,25 @@
+{
+  "name": "storage-web3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/einhn/storage-web3.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/einhn/storage-web3/issues"
+  },
+  "homepage": "https://github.com/einhn/storage-web3#readme",
+  "volta": {
+    "node": "24.11.1",
+    "npm": "11.6.4"
+  }
+}
