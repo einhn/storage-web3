@@ -26,6 +26,9 @@ export default function Dashboard() {
   const [usage, setUsage] = useState(null);
   const [usageStatus, setUsageStatus] = useState("");
 
+  const [files, setFiles] = useState([]);
+  const [filesStatus, setFilesStatus] = useState("");
+
   // 1) 쿼리 or localStorage 에서 userId / wallet 가져오기
   useEffect(() => {
     if (!router.isReady) return;
@@ -93,6 +96,42 @@ export default function Dashboard() {
     };
   }, [userId]);
 
+  // 3) userId가 준비되면 사용자가 올린 파일 목록 가져오기
+  useEffect(() => {
+    if (!userId) return;
+
+    let cancelled = false;
+
+    const fetchFiles = async () => {
+      try {
+        setFilesStatus("loading");
+        const res = await fetch(`/api/files/list?userId=${userId}`);
+        if (!res.ok) {
+          console.error("files fetch failed", res.status);
+          if (!cancelled) {
+            setFilesStatus("error");
+          }
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          setFiles(data.files || []);
+          setFilesStatus("ok");
+        }
+      } catch (err) {
+        console.error("files fetch error", err);
+        if (!cancelled) {
+          setFilesStatus("error");
+        }
+      }
+    };
+
+    fetchFiles();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
   return (
     <div style={{ maxWidth: 640 }}>
       <h2>대시보드</h2>
@@ -149,7 +188,7 @@ export default function Dashboard() {
               </p>
             ) : (
               <p style={{ margin: "0.25rem 0", fontSize: "0.85rem" }}>
-                아직 온체인 커밋 전입니다.
+                온체인 정산은 매달 2일입니다.
               </p>
             )}
           </>
@@ -158,8 +197,70 @@ export default function Dashboard() {
 
       {/* 업로드 페이지 링크 */}
       <section style={{ marginTop: "1.5rem" }}>
-        <a href="/upload">이미지 업로드 하러 가기</a>
+        <a href="/upload">이미지 업로드</a>
       </section>
     </div>
   );
+      {/* 이미지 목록 */}
+      <section
+        style={{
+          marginTop: "1.5rem",
+          padding: "1rem 1.25rem",
+          borderRadius: "0.75rem",
+          border: "1px solid #ddd",
+          backgroundColor: "#fff",
+        }}
+      >
+        <h3 style={{ margin: 0, marginBottom: "0.5rem" }}>
+          업로드한 이미지 (IPFS)
+        </h3>
+
+        {filesStatus === "loading" && <p>이미지 목록을 불러오는 중...</p>}
+
+        {filesStatus === "error" && (
+          <p style={{ color: "crimson" }}>
+            이미지 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+          </p>
+        )}
+
+        {filesStatus === "ok" && files.length === 0 && (
+          <p>아직 업로드한 이미지가 없습니다.</p>
+        )}
+
+        {filesStatus === "ok" && files.length > 0 && (
+          <ul style={{ listStyle: "none", paddingLeft: 0, marginTop: "0.5rem" }}>
+            {files.map((f) => (
+              <li
+                key={f.id}
+                style={{
+                  padding: "0.4rem 0",
+                  borderBottom: "1px solid #eee",
+                  fontSize: "0.9rem",
+                }}
+              >
+                <div>
+                  CID:{" "}
+                  <a
+                    href={f.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ textDecoration: "underline" }}
+                  >
+                    {f.cid}
+                  </a>
+                </div>
+                <div style={{ color: "#666" }}>
+                  크기: {formatBytes(f.size)} ({f.size} bytes)
+                  {f.uploadedAt && (
+                    <>
+                      {" - 업로드 시각: "}
+                      {new Date(f.uploadedAt).toLocaleString()}
+                    </>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 }
