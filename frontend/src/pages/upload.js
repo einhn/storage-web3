@@ -1,10 +1,24 @@
 // frontend/src/pages/upload.js
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Upload() {
   const [userAddress, setUserAddress] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [status, setStatus] = useState("");
+
+  // 🔑 로그인 시 저장해둔 wallet 자동으로 불러오기
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = window.localStorage.getItem("storage-web3:user");
+    if (raw) {
+      try {
+        const saved = JSON.parse(raw);
+        if (saved.wallet) {
+          setUserAddress(saved.wallet);
+        }
+      } catch {}
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,7 +29,7 @@ export default function Upload() {
       return;
     }
     if (!userAddress) {
-      setStatus("사용자 지갑 주소를 입력해 주세요.");
+      setStatus("지갑 주소를 찾을 수 없습니다. 다시 로그인해 주세요.");
       return;
     }
 
@@ -38,7 +52,7 @@ export default function Upload() {
       const json = await res.json().catch(() => null);
       setStatus(
         "업로드 성공" +
-          (json && json.ipfsCid ? ` (CID: ${json.ipfsCid})` : ""),
+          (json && json.ipfsCid ? ` (CID: ${json.ipfsCid})` : "")
       );
     } catch (err) {
       setStatus("에러: " + err.message);
@@ -49,9 +63,7 @@ export default function Upload() {
     <div style={{ maxWidth: 480 }}>
       <h2>이미지 업로드</h2>
       <p style={{ marginTop: "0.75rem", color: "#555" }}>
-        예시 이미지를 업로드하면 백엔드에서 pHash 계산, IPFS 업로드,
-        <br />
-        DB(UserFile)에 메타데이터를 저장하는 흐름으로 확장할 예정입니다.
+        로그인한 계정에 연결된 지갑으로 사용량을 기록합니다.
       </p>
 
       <form
@@ -63,19 +75,20 @@ export default function Upload() {
           gap: "0.75rem",
         }}
       >
+        {/* ❗ 지갑 주소는 자동으로 세팅하고, 그냥 읽기 전용으로만 보여주기 */}
         <label style={{ fontSize: "0.9rem" }}>
-          사용자 지갑 주소
+          연결된 지갑 주소
           <input
             type="text"
             value={userAddress}
-            onChange={(e) => setUserAddress(e.target.value)}
-            placeholder="0x로 시작하는 주소"
+            readOnly
             style={{
               width: "100%",
               marginTop: "0.25rem",
               padding: "0.5rem 0.75rem",
               borderRadius: "0.5rem",
               border: "1px solid #ccc",
+              backgroundColor: "#f6f6f6",
             }}
           />
         </label>
