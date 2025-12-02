@@ -65,13 +65,16 @@ router.get("/google/callback", async (req, res) => {
   try {
     const code = req.query.code as string | undefined;
     const state = req.query.state as string | undefined;
+    const cookieState = req.cookies?.oauth_state;
+
+    console.log("[callback] state:", state);
+    console.log("[callback] cookieState:", cookieState);
 
     if (!code) {
       return res.status(400).send("Missing code");
     }
 
-    // state 검증 (간단 버전)
-    const cookieState = req.cookies?.oauth_state;
+    // state 검증
     if (!cookieState || cookieState !== state) {
       return res.status(400).send("Invalid state");
     }
