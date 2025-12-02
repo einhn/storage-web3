@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 
-const BACKEND_ORIGIN = process.env.BACKEND_ORIGIN;
+const BACKEND_ORIGIN = process.env.NEXT_PUBLIC_BACKEND_ORIGIN;
 
 const nextConfig = {
   async rewrites() {

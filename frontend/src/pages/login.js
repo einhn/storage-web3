@@ -5,7 +5,7 @@ export default function Login() {
     // 프론트에서는 /api/... 만 쓰면 되고
     // next.config.js rewrites가 백엔드로 프록시해줌
     const backendOrigin = process.env.NEXT_PUBLIC_BACKEND_ORIGIN;
-    window.location.href = `${backendOrigin}/auth/google/start`;
+    window.location.href = `${backendOrigin}/auth/google/start/auth/google/start`;
   };
 
   return (
