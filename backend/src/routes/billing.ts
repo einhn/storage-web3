@@ -21,7 +21,7 @@ const router = Router();
  *   year: 2025,
  *   month: 12,
  *   totalBytes: "123456789",
- *   billedAmount: "1000000000000000",
+ *   billedAmount: "1000000000000000",₩
  *   snapshotHash: "0x....dead"
  * }
  */
@@ -34,7 +34,14 @@ router.post("/commit", async (req, res) => {
       totalBytes,
       billedAmount,
       snapshotHash,
-    } = req.body;
+    } = req.body as {
+      user?: string;
+      year?: number;
+      month?: number;
+      totalBytes?: string;
+      billedAmount?: string;
+      snapshotHash?: string;
+    };
 
     // 최소한의 바디 검증
     if (
@@ -219,131 +226,6 @@ router.post("/settle", async (req, res) => {
     });
   } catch (err: any) {
     console.error("[/billing/settle] error:", err);
-    return res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /billing/cron-commit
-// 크론잡에서 호출하는 "모든 유저 월 정산" 엔드포인트
-router.post("/cron-commit", async (req, res) => {
-  try {
-    const { year, month } = req.body;
-
-    if (year === undefined || month === undefined) {
-      return res.status(400).json({ error: "missing year/month" });
-    }
-
-    const yearNum = Number(year);
-    const monthNum = Number(month);
-    if (!Number.isInteger(yearNum) || !Number.isInteger(monthNum)) {
-      return res.status(400).json({ error: "year/month must be integers" });
-    }
-
-    // 1) 모든 유저 가져오기
-    const users = await prisma.user.findMany();
-    if (users.length === 0) {
-      return res.json({
-        status: "ok",
-        message: "no users to bill",
-      });
-    }
-
-    const results: {
-      walletAddress: string | null;
-      snapshotId?: string;
-      txHash?: string;
-      error?: string;
-    }[] = [];
-
-    // 2) 각 유저에 대해 순차적으로 처리 (프로토타입으로 단순하게 직렬 처리)
-    for (const u of users) {
-      try {
-        const walletAddress = u.walletAddress;
-
-        if (!walletAddress) {
-        results.push({
-            walletAddress: null,
-            error: "user has no walletAddress; skipped on-chain commit",
-        });
-        continue;
-        }
-        // TODO: DailySnapshot 등에서 총 사용량/청구금액 계산
-        // 일단 데모용 상수/임시 값 사용
-        const totalBytesBig = BigInt("123456789");
-        const billedAmountStr = "1000000000000000";
-        const billedAmountBig = BigInt(billedAmountStr);
-
-        const snapshotHash =
-          "0x000000000000000000000000000000000000000000000000000000000000dead";
-
-        // UsageSnapshot upsert
-        let snapshot = await prisma.usageSnapshot.upsert({
-          where: {
-            userId_year_month: {
-              userId: u.id,
-              year: yearNum,
-              month: monthNum,
-            },
-          },
-          update: {
-            totalBytes: totalBytesBig,
-            billedAmount: billedAmountStr,
-            snapshotHash,
-          },
-          create: {
-            userId: u.id,
-            year: yearNum,
-            month: monthNum,
-            totalBytes: totalBytesBig,
-            billedAmount: billedAmountStr,
-            snapshotHash,
-          },
-        });
-
-        // 온체인 commit
-        const receipt = await commitOnchain({
-          user: walletAddress,
-          year: yearNum,
-          month: monthNum,
-          totalBytes: totalBytesBig,
-          billedAmount: billedAmountBig,
-          snapshotHash,
-        });
-
-        const txHash = receipt.hash;
-        const blockNumber = receipt.blockNumber ?? null;
-
-        snapshot = await prisma.usageSnapshot.update({
-          where: { id: snapshot.id },
-          data: {
-            commitTxHash: txHash,
-            commitBlock: blockNumber !== null ? BigInt(blockNumber) : null,
-          },
-        });
-
-        results.push({
-          walletAddress,
-          snapshotId: snapshot.id.toString(),
-          txHash,
-        });
-      } catch (e: any) {
-        console.error("[/billing/cron-commit] per-user error:", e);
-        results.push({
-          walletAddress: u.walletAddress,
-          error: e.message ?? String(e),
-        });
-      }
-    }
-
-    return res.json({
-      status: "ok",
-      year: yearNum,
-      month: monthNum,
-      count: results.length,
-      results,
-    });
-  } catch (err: any) {
-    console.error("[/billing/cron-commit] error:", err);
     return res.status(500).json({ error: err.message });
   }
 });

@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "bill:monthly": "node dist/jobs/monthlyBilling.js"
   },
   "keywords": [],
   "author": "",
