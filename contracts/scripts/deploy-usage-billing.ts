@@ -1,3 +1,4 @@
+// contracts/scripts/deploy-usage-billing.ts
 import hre from "hardhat";
 import { promises as fs } from "fs";
 import path from "path";
@@ -23,7 +24,7 @@ async function main() {
   const network = await ethers.provider.getNetwork();
 
   const artifact = await hre.artifacts.readArtifact("UsageBilling");
-  const outDir = path.join(process.cwd(), "deployed");
+  const outDir = path.join(process.cwd(), "..", "backend", "contracts", "deployed");
   await fs.mkdir(outDir, { recursive: true });
 
   const data = {

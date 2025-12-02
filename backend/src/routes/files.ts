@@ -4,6 +4,7 @@ import multer from "multer";
 import { prisma } from "../lib/prisma";
 import { computePHash } from "../lib/phash";
 import { addFileToIpfs } from "../lib/ipfs";
+import { Prisma } from "@prisma/client";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -41,7 +42,7 @@ router.post(
       const buffer = file.buffer;
       const size = BigInt(file.size);
 
-      // 1) User 찾거나 생성 (billing과 동일 패턴)
+      // 1) User 찾거나 생성
       let user = await prisma.user.findUnique({
         where: { walletAddress: userAddress },
       });
@@ -57,13 +58,11 @@ router.post(
       // 2) pHash 계산
       const phash = await computePHash(buffer);
 
-      // 3) IPFS 업로드 (현재는 dummy 구현일 수 있음)
+      // 3) IPFS 업로드
       const cid = await addFileToIpfs(buffer);
 
-      // 4) 기존 동일 CID가 있으면 재사용, 없으면 새 File
-      let fileRow = await prisma.file.findUnique({
-        where: { cid },
-      });
+      // 4) 파일 레코드 생성 (CID 기반 dedup)
+      let fileRow = await prisma.file.findUnique({ where: { cid } });
 
       if (!fileRow) {
         const existingWithSamePHash = await prisma.file.findFirst({
@@ -82,7 +81,6 @@ router.post(
           },
         });
 
-        // groupId 없으면 자기 자신을 그룹 리더로 설정
         if (!fileRow.groupId) {
           fileRow = await prisma.file.update({
             where: { id: fileRow.id },
@@ -93,7 +91,7 @@ router.post(
         }
       }
 
-      // 5) UserFile 연결 (이미 있으면 그대로)
+      // 5) UserFile 연결 (upsert)
       await prisma.userFile.upsert({
         where: {
           userId_fileId: {
@@ -105,6 +103,36 @@ router.post(
         create: {
           userId: user.id,
           fileId: fileRow.id,
+        },
+      });
+
+      // 6) 이번 달 UsageSnapshot에 delta 반영
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+
+      const totalBytesDelta = size;
+      const billedDelta = new Prisma.Decimal(totalBytesDelta.toString());
+
+      await prisma.usageSnapshot.upsert({
+        where: {
+          userId_year_month: {
+            userId: user.id,
+            year,
+            month,
+          },
+        },
+        update: {
+          totalBytes: { increment: totalBytesDelta },
+          billedAmount: { increment: billedDelta },
+        },
+        create: {
+          userId: user.id,
+          year,
+          month,
+          totalBytes: totalBytesDelta,
+          billedAmount: billedDelta,
+          snapshotHash: "0x" + "0".repeat(64),
         },
       });
 
@@ -122,7 +150,7 @@ router.post(
       console.error("[/files/upload] error:", err);
       res.status(500).json({ error: err.message });
     }
-  },
+  }
 );
 
 export default router;
