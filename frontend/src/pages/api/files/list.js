@@ -1,6 +1,7 @@
 // frontend/src/pages/api/files/list.js
 export default async function handler(req, res) {
   const { userId } = req.query;
+  console.log("[/api/files/list] userId =", userId);
 
   if (!userId) {
     res.status(400).json({ error: "userId is required" });
@@ -8,13 +9,18 @@ export default async function handler(req, res) {
   }
 
   const backendBase =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+    process.env.NEXT_PUBLIC_BACKEND_ORIGIN;
+    console.log("[/api/files/list] backendBase =", backendBase);
 
   try {
     const upstream = await fetch(
       `${backendBase}/files/user/${encodeURIComponent(userId)}`
     );
-
+    console.log(
+      "[/api/files/list] upstream status =",
+      upstream.status
+    );
+    
     const text = await upstream.text();
 
     let data;
