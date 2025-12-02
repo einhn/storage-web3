@@ -195,13 +195,7 @@ export default function Dashboard() {
         )}
       </section>
 
-      {/* 업로드 페이지 링크 */}
-      <section style={{ marginTop: "1.5rem" }}>
-        <a href="/upload">이미지 업로드</a>
-      </section>
-    </div>
-  );
-      {/* 이미지 목록 */}
+      {/* 업로드한 이미지 목록 */}
       <section
         style={{
           marginTop: "1.5rem",
@@ -253,7 +247,7 @@ export default function Dashboard() {
                   크기: {formatBytes(f.size)} ({f.size} bytes)
                   {f.uploadedAt && (
                     <>
-                      {" - 업로드 시각: "}
+                      {" · 업로드 시각: "}
                       {new Date(f.uploadedAt).toLocaleString()}
                     </>
                   )}
@@ -263,4 +257,11 @@ export default function Dashboard() {
           </ul>
         )}
       </section>
+
+      {/* 업로드 페이지 링크 */}
+      <section style={{ marginTop: "1.5rem" }}>
+        <a href="/upload">이미지 업로드</a>
+      </section>
+    </div>
+  );
 }
