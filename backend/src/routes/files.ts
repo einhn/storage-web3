@@ -153,4 +153,54 @@ router.post(
   }
 );
 
+// 사용자가 올린 파일 목록 조회
+// GET /files/user/:userId
+router.get("/user/:userId", async (req, res): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      res.status(400).json({ error: "userId is required" });
+      return;
+    }
+
+    let userIdBigInt: bigint;
+    try {
+      userIdBigInt = BigInt(userId);
+    } catch {
+      res.status(400).json({ error: "invalid userId" });
+      return;
+    }
+
+    // UserFile + File join
+    const userFiles = await prisma.userFile.findMany({
+      where: { userId: userIdBigInt },
+      include: {
+        file: true,
+      },
+      orderBy: { uploadedAt: "desc" },
+      take: 100, // 최근 100개 정도만
+    });
+
+    const gateway = process.env.IPFS_GATEWAY_URL || "https://ipfs.io/ipfs/";
+
+    const files = userFiles.map((uf) => ({
+      id: uf.file.id.toString(),
+      cid: uf.file.cid,
+      size: uf.file.size.toString(),
+      groupId: uf.file.groupId ? uf.file.groupId.toString() : null,
+      uploadedAt: uf.uploadedAt.toISOString(),
+      url: `${gateway}${uf.file.cid}`,
+    }));
+
+    res.json({
+      userId,
+      count: files.length,
+      files,
+    });
+  } catch (err: any) {
+    console.error("[/files/user/:userId] error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
