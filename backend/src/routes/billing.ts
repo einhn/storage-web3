@@ -249,7 +249,7 @@ router.post("/cron-commit", async (req, res) => {
     }
 
     const results: {
-      walletAddress: string;
+      walletAddress: string | null;
       snapshotId?: string;
       txHash?: string;
       error?: string;
@@ -260,6 +260,13 @@ router.post("/cron-commit", async (req, res) => {
       try {
         const walletAddress = u.walletAddress;
 
+        if (!walletAddress) {
+        results.push({
+            walletAddress: null,
+            error: "user has no walletAddress; skipped on-chain commit",
+        });
+        continue;
+        }
         // TODO: DailySnapshot 등에서 총 사용량/청구금액 계산
         // 일단 데모용 상수/임시 값 사용
         const totalBytesBig = BigInt("123456789");
