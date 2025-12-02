@@ -2,10 +2,8 @@
 
 export default function Login() {
   const handleLogin = () => {
-    // 프론트에서는 /api/... 만 쓰면 되고
-    // next.config.js rewrites가 백엔드로 프록시해줌
     const backendOrigin = process.env.NEXT_PUBLIC_BACKEND_ORIGIN;
-    window.location.href = `${backendOrigin}/auth/google/start/auth/google/start`;
+    window.location.href = `${backendOrigin}/auth/google/start`;
   };
 
   return (
@@ -35,8 +33,7 @@ export default function Login() {
         <span>Google로 로그인</span>
       </button>
 
-      <p style={{ marginTop: "1rem", fontSize: "0.8rem", color: "#888" }}>
-      </p>
+      <p style={{ marginTop: "1rem", fontSize: "0.8rem", color: "#888" }}></p>
     </div>
   );
 }
