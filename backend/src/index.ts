@@ -6,6 +6,7 @@ import billingRouter from "./routes/billing";
 import filesRouter from "./routes/files";
 import cookieParser from "cookie-parser";
 import authGoogleRouter from "./routes/authGoogle";
+import usageRouter from "./routes/usage";
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ app.use("/billing", billingRouter);
 app.use("/files", filesRouter);
 
 app.use("/auth", authGoogleRouter);
+
+app.use("/usage", usageRouter);
 
 app.listen(PORT, () => {
   console.log(`[backend] listening on port ${PORT}`);
